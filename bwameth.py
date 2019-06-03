@@ -308,10 +308,9 @@ def rname(fq1, fq2=""):
         return "".join(a for a, b in zip(name(fq1), name(fq2)) if a == b) or 'bm'
 
 
-def bwa_mem(fa, fq_convert_cmd, extra_args, threads=1, rg=None,
-            paired=True, set_as_failed=None, mismatchPenalty=mismatchPenalty,
-           gapOpenPenalty=gapOpenPenalty, gapExtensionPenalty=gapExtensionPenalty,
-           clippingPenalty=clippingPenalty, minAlignmentScore=minAlignmentScore):
+def bwa_mem(fa, fq_convert_cmd, extra_args, threads=1, mismatchPenalty=2,
+           gapOpenPenalty=6, gapExtensionPenalty=1, clippingPenalty=10, 
+            minAlignmentScore=40,rg=None, paired=True, set_as_failed=None):
     conv_fa = convert_fasta(fa, just_name=True)
     if not is_newer_b(conv_fa, (conv_fa + '.amb', conv_fa + '.sa')):
         raise BWAMethException("first run bwameth.py index %s" % fa)
@@ -483,6 +482,11 @@ def main(args=sys.argv[1:]):
     p = argparse.ArgumentParser(__doc__)
     p.add_argument("--reference", help="reference fasta", required=True)
     p.add_argument("-t", "--threads", type=int, default=6)
+    p.add_argument('-B','--mismatchPenalty',type=int,default=2)
+    p.add_argument('-O','--gapOpenPenalty',type=int,default=6)
+    p.add_argument('-E','--gapExtensionPenalty',type=int,default=1)
+    p.add_argument('-L','--clippingPenalty',type=int,default=10)
+    p.add_argument('-T','--minAlignmentScore',type=int,default=40)
     p.add_argument("--read-group", help="read-group to add to bam in same"
             " format as to bwa: '@RG\\tID:foo\\tSM:bar'")
     p.add_argument('--set-as-failed', help="flag alignments to this strand"
@@ -494,11 +498,7 @@ def main(args=sys.argv[1:]):
         default=None, choices=('f', 'r'))
     p.add_argument('-p', '--interleaved', action='store_true', help='fastq files have 4 lines of read1 followed by 4 lines of read2 (e.g. seqtk mergepe output)')
     p.add_argument('--version', action='version', version='bwa-meth.py {}'.format(__version__))
-    p.add_argument('-B','--mismatchPenalty',type=int,default=2)
-    p.add_argument('-O','--gapOpenPenalty',type=int,default=6)
-    p.add_argument('-E','--gapExtensionPenalty',type=int,default=1)
-    p.add_argument('-L','--clippingPenalty',type=int,default=10)
-    p.add_argument('-T','--minAlignmentScore',type=int,default=40)
+
     
     p.add_argument("fastqs", nargs="+", help="bs-seq fastqs to align. Run"
             "multiple sets separated by commas, e.g. ... a_R1.fastq,b_R1.fastq"
@@ -512,14 +512,14 @@ def main(args=sys.argv[1:]):
 
     bwa_mem(args.reference, conv_fqs_cmd, ' '.join(map(str, pass_through_args)),
             threads=args.threads,
-            rg=args.read_group or rname(*args.fastqs),
-            paired=(len(args.fastqs) == 2 or args.interleaved),
-            set_as_failed=args.set_as_failed,
             mismatchPenalty=args.mismatchPenalty,
             gapOpenPenalty=args.gapOpenPenalty,
             gapExtensionPenalty=args.gapExtensionPenalty,
             clippingPenalty=args.clippingPenalty,
-            minAlignmentScore=args.minAlignmentScore)
+            minAlignmentScore=args.minAlignmentScore,
+            rg=args.read_group or rname(*args.fastqs),
+            paired=(len(args.fastqs) == 2 or args.interleaved),
+            set_as_failed=args.set_as_failed)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
