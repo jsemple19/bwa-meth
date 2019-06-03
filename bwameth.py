@@ -309,7 +309,9 @@ def rname(fq1, fq2=""):
 
 
 def bwa_mem(fa, fq_convert_cmd, extra_args, threads=1, rg=None,
-            paired=True, set_as_failed=None):
+            paired=True, set_as_failed=None, mismatchPenalty=mismatchPenalty,
+           gapOpenPenalty=gapOpenPenalty, gapExtensionPenalty=gapExtensionPenalty,
+           clippingPenalty=clippingPenalty, minAlignmentScore=minAlignmentScore):
     conv_fa = convert_fasta(fa, just_name=True)
     if not is_newer_b(conv_fa, (conv_fa + '.amb', conv_fa + '.sa')):
         raise BWAMethException("first run bwameth.py index %s" % fa)
