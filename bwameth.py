@@ -316,17 +316,20 @@ def bwa_mem(fa, fq_convert_cmd, extra_args, threads=1, rg=None,
 
     if not rg is None and not rg.startswith('@RG'):
         rg = '@RG\\tID:{rg}\\tSM:{rg}'.format(rg=rg)
-
+    
     #starts the pipeline with the program to convert fastqs
     cmd = ("|%s " % fq_convert_cmd)
 
     # penalize clipping and unpaired. lower penalty on mismatches (-B)
-    cmd += "|bwa mem -T 40 -B 2 -L 10 -CM "
-
+    cmd += "|bwa mem -CM "
+    
     if paired:
         cmd += ("-U 100 -p ")
-    cmd += "-R '{rg}' -t {threads} {extra_args} {conv_fa} -"
+    cmd += "-R '{rg}' -t {threads} -B {mismatchPenalty} -O {gapOpenPenalty} -E {gapExtensionPenalty} "
+    cmd += "-L {clippingPenalty} -T {minAlignmentScore}  {extra_args} {conv_fa} -"
     cmd = cmd.format(**locals())
+
+    
     sys.stderr.write("running: %s\n" % cmd.lstrip("|"))
     as_bam(cmd, fa, set_as_failed)
 
@@ -489,10 +492,16 @@ def main(args=sys.argv[1:]):
         default=None, choices=('f', 'r'))
     p.add_argument('-p', '--interleaved', action='store_true', help='fastq files have 4 lines of read1 followed by 4 lines of read2 (e.g. seqtk mergepe output)')
     p.add_argument('--version', action='version', version='bwa-meth.py {}'.format(__version__))
-
+    p.add_argument('-B','--mismatchPenalty',type=int,default=2)
+    p.add_argument('-O','--gapOpenPenalty',type=int,default=6)
+    p.add_argument('-E','--gapExtenstionPenalty',type=int,default=1)
+    p.add_argument('-L','--clippingPenalty',type=int,default=10)
+    p.add_argument('-T','--minAlignmentScore',type=int,default=40)
+    
     p.add_argument("fastqs", nargs="+", help="bs-seq fastqs to align. Run"
             "multiple sets separated by commas, e.g. ... a_R1.fastq,b_R1.fastq"
             " a_R2.fastq,b_R2.fastq note that the order must be maintained.")
+
 
     args, pass_through_args = p.parse_known_args(args)
 
@@ -503,7 +512,12 @@ def main(args=sys.argv[1:]):
             threads=args.threads,
             rg=args.read_group or rname(*args.fastqs),
             paired=(len(args.fastqs) == 2 or args.interleaved),
-            set_as_failed=args.set_as_failed)
+            set_as_failed=args.set_as_failed,
+            mismatchPenalty=args.mismatchPenalty,
+            gapOpenPenalty=args.gapOpenPenatly,
+            gapExtensionPenalty=args.gapExtensionPenalty,
+            minAlignmentScore=args.clippingPenalty,
+            minAlignmentScore=args.minAlignmentScore)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
