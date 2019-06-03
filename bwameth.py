@@ -494,7 +494,7 @@ def main(args=sys.argv[1:]):
     p.add_argument('--version', action='version', version='bwa-meth.py {}'.format(__version__))
     p.add_argument('-B','--mismatchPenalty',type=int,default=2)
     p.add_argument('-O','--gapOpenPenalty',type=int,default=6)
-    p.add_argument('-E','--gapExtenstionPenalty',type=int,default=1)
+    p.add_argument('-E','--gapExtensionPenalty',type=int,default=1)
     p.add_argument('-L','--clippingPenalty',type=int,default=10)
     p.add_argument('-T','--minAlignmentScore',type=int,default=40)
     
