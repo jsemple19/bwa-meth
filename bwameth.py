@@ -516,7 +516,7 @@ def main(args=sys.argv[1:]):
             mismatchPenalty=args.mismatchPenalty,
             gapOpenPenalty=args.gapOpenPenatly,
             gapExtensionPenalty=args.gapExtensionPenalty,
-            minAlignmentScore=args.clippingPenalty,
+            clippingPenalty=args.clippingPenalty,
             minAlignmentScore=args.minAlignmentScore)
 
 if __name__ == "__main__":
