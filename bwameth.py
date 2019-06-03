@@ -325,9 +325,9 @@ def bwa_mem(fa, fq_convert_cmd, extra_args, threads=1, rg=None,
     
     if paired:
         cmd += ("-U 100 -p ")
-    cmd += "-R '{rg}' -t {threads} -B {mismatchPenalty} -O {gapOpenPenalty} -E {gapExtensionPenalty} "
-    cmd += "-L {clippingPenalty} -T {minAlignmentScore}  {extra_args} {conv_fa} -"
-    cmd = cmd.format(**locals())
+    cmd += f"-R '{rg}' -t {threads} -B {mismatchPenalty} -O {gapOpenPenalty} -E {gapExtensionPenalty} "
+    cmd += f"-L {clippingPenalty} -T {minAlignmentScore}  {extra_args} {conv_fa} -"
+    #cmd = cmd.format(**locals())
 
     
     sys.stderr.write("running: %s\n" % cmd.lstrip("|"))
