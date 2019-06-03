@@ -514,7 +514,7 @@ def main(args=sys.argv[1:]):
             paired=(len(args.fastqs) == 2 or args.interleaved),
             set_as_failed=args.set_as_failed,
             mismatchPenalty=args.mismatchPenalty,
-            gapOpenPenalty=args.gapOpenPenatly,
+            gapOpenPenalty=args.gapOpenPenalty,
             gapExtensionPenalty=args.gapExtensionPenalty,
             clippingPenalty=args.clippingPenalty,
             minAlignmentScore=args.minAlignmentScore)
