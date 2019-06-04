@@ -308,9 +308,10 @@ def rname(fq1, fq2=""):
         return "".join(a for a, b in zip(name(fq1), name(fq2)) if a == b) or 'bm'
 
 
-def bwa_mem(fa, fq_convert_cmd, extra_args, threads=1, mismatchPenalty=2,
-           gapOpenPenalty=6, gapExtensionPenalty=1, clippingPenalty=10, 
-            minAlignmentScore=40,rg=None, paired=True, set_as_failed=None):
+def bwa_mem(fa, fq_convert_cmd, extra_args, threads=1, minSeedLength=19, bandWidth=100,
+            dropoff=100, mismatchPenalty=2, gapOpenPenalty=6, gapExtensionPenalty=1, 
+            clippingPenalty=10, minAlignmentScore=40,rg=None, paired=True, 
+            set_as_failed=None):
     conv_fa = convert_fasta(fa, just_name=True)
     if not is_newer_b(conv_fa, (conv_fa + '.amb', conv_fa + '.sa')):
         raise BWAMethException("first run bwameth.py index %s" % fa)
@@ -326,7 +327,8 @@ def bwa_mem(fa, fq_convert_cmd, extra_args, threads=1, mismatchPenalty=2,
     
     if paired:
         cmd += ("-U 100 -p ")
-    cmd += f"-R '{rg}' -t {threads} -B {mismatchPenalty} -O {gapOpenPenalty} -E {gapExtensionPenalty} "
+    cmd += f"-R '{rg}' -t {threads} -k {minSeedLength} -w {bandWidth} -d {dropoff} "
+    cmd += f"-B {mismatchPenalty} -O {gapOpenPenalty} -E {gapExtensionPenalty} "
     cmd += f"-L {clippingPenalty} -T {minAlignmentScore}  {extra_args} {conv_fa} -"
     #cmd = cmd.format(**locals())
 
@@ -482,6 +484,9 @@ def main(args=sys.argv[1:]):
     p = argparse.ArgumentParser(__doc__)
     p.add_argument("--reference", help="reference fasta", required=True)
     p.add_argument("-t", "--threads", type=int, default=6)
+    p.add_argument('-k', '--minSeedLength', type=int, default=19)
+    p.add_argument('-w', '--bandWidth', type=int, default=100)
+    p.add_argument('-d', '--dropoff', type=int, default=100)
     p.add_argument('-B','--mismatchPenalty',type=int,default=2)
     p.add_argument('-O','--gapOpenPenalty',type=int,default=6)
     p.add_argument('-E','--gapExtensionPenalty',type=int,default=1)
@@ -512,6 +517,9 @@ def main(args=sys.argv[1:]):
 
     bwa_mem(args.reference, conv_fqs_cmd, ' '.join(map(str, pass_through_args)),
             threads=args.threads,
+            minSeedLength=args.minSeedLength,
+            bandWidth=args.bandWidth,
+            dropoff=args.dropoff,
             mismatchPenalty=args.mismatchPenalty,
             gapOpenPenalty=args.gapOpenPenalty,
             gapExtensionPenalty=args.gapExtensionPenalty,
